@@ -1,9 +1,11 @@
 import pygame
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SPEED
+from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS
+from shot import Shot
 
 class Player(CircleShape):
     containers: tuple[pygame.sprite.Group, ...]
+    shoot_cooldown: float = 0.0
 
     def __init__(self, x: float, y: float, dt: float) -> None:
         super().__init__(x, y, PLAYER_RADIUS)
@@ -34,10 +36,21 @@ class Player(CircleShape):
             self.rotate(-dt)
         if keys[pygame.K_d]:
             self.rotate(dt)
-        
+        if keys[pygame.K_SPACE]:
+            self.shoot()
+
+        self.shoot_cooldown -= dt
 
     def move(self, dt: float) -> None:
         unit_vector = pygame.Vector2(0, 1)
         rotated_vector = unit_vector.rotate(self.rotation)
         rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
         self.position += rotated_with_speed_vector
+
+    def shoot(self) -> None:
+        shot = Shot(self.position.x, self.position.y)
+        shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+        if self.shoot_cooldown <= 0.0:
+            self.shoot_cooldown = PLAYER_SHOOT_COOLDOWN_SECONDS
+        else:
+            shot.kill()
