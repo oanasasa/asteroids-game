@@ -14,3 +14,6 @@ wheels/
 .idea/
 .vscode/
 .env
+
+#jsonl files
+game_state.jsonl
